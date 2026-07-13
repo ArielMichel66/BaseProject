@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BaseProject.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260713181422_InitialDb")]
+    [Migration("20260713201520_InitialDb")]
     partial class InitialDb
     {
         /// <inheritdoc />
@@ -23,6 +23,27 @@ namespace BaseProject.Backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BaseProject.Shared.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Categories");
+                });
 
             modelBuilder.Entity("BaseProject.Shared.Entities.Country", b =>
                 {
@@ -42,7 +63,7 @@ namespace BaseProject.Backend.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("countries");
+                    b.ToTable("Countries");
                 });
 #pragma warning restore 612, 618
         }

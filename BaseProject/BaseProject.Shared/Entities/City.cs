@@ -3,13 +3,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BaseProject.Shared.Entities;
 
-public class Category : IEntityWithName
-
+public class City : IEntityWithName
 {
     public int Id { get; set; }
 
-    [Display(Name = "Categoría")]
+    [Display(Name = "Ciudad")]
     [MaxLength(100, ErrorMessage = "El campo {0} no puede tener más de {1} caracteres.")]
     [Required(ErrorMessage = "El campo {0} es obligatorio.")]
     public string Name { get; set; } = null!;
+
+    public int StateId { get; set; }
+
+    public State State { get; set; } = null!;
+
+    public ICollection<City>? Cities { get; set; }
+
+    [Display(Name = "Ciudades")]
+    public int CitiesNumber => Cities == null || Cities.Count == 0 ? 0 : Cities.Count;
 }

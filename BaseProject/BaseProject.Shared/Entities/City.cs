@@ -15,9 +15,4 @@ public class City : IEntityWithName
     public int StateId { get; set; }
 
     public State State { get; set; } = null!;
-
-    public ICollection<City>? Cities { get; set; }
-
-    [Display(Name = "Ciudades")]
-    public int CitiesNumber => Cities == null || Cities.Count == 0 ? 0 : Cities.Count;
 }

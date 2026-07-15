@@ -1,85 +1,50 @@
 ﻿using BaseProject.Backend.Data;
+using BaseProject.Backend.Helpers;
 using BaseProject.Backend.Repositories.Interfaces;
+using BaseProject.Shared.DTOs;
 using BaseProject.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 
-namespace BaseProject.Backend.Repositories.Implementations
+namespace BaseProject.Backend.Repositories.Implementations;
+
+public class GenericRepository<T> : IGenericRepository<T> where T : class
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    private readonly DataContext _context;
+    private readonly DbSet<T> _entity;
+
+    public GenericRepository(DataContext context)
     {
-        private readonly DataContext _context;
-        private readonly DbSet<T> _entity;
+        _context = context;
+        _entity = context.Set<T>();
+    }
 
-        public GenericRepository(DataContext context)
+    public virtual async Task<ActionResponse<T>> AddAsync(T entity)
+    {
+        _context.Add(entity);
+        try
         {
-            _context = context;
-            _entity = context.Set<T>();
+            await _context.SaveChangesAsync();
+            return new ActionResponse<T>
+            {
+                WasSuccess = true,
+                Result = entity
+            };
         }
-
-        public virtual async Task<ActionResponse<T>> AddAsync(T entity)
+        catch (DbUpdateException)
         {
-            _context.Add(entity);
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new ActionResponse<T>
-                {
-                    WasSuccess = true,
-                    Result = entity
-                };
-            }
-            catch (DbUpdateException)
-            {
-                return DbUpdateExceptionActionResponse();
-            }
-            catch (Exception exception)
-            {
-                return ExceptionActionResponse(exception);
-            }
+            return DbUpdateExceptionActionResponse();
         }
-
-        public virtual async Task<ActionResponse<T>> DeleteAsync(int id)
+        catch (Exception exception)
         {
-            var row = await _entity.FindAsync(id);
-            if (row == null)
-            {
-                return new ActionResponse<T>
-                {
-                    WasSuccess = false,
-                    Message = "Registro no encontrado"
-                };
-            }
-
-            try
-            {
-                _entity.Remove(row);
-                await _context.SaveChangesAsync();
-                return new ActionResponse<T>
-                {
-                    WasSuccess = true,
-                };
-            }
-            catch
-            {
-                return new ActionResponse<T>
-                {
-                    WasSuccess = false,
-                    Message = "No se puede borrar, porque tiene registros relacionados"
-                };
-            }
+            return ExceptionActionResponse(exception);
         }
+    }
 
-        public virtual async Task<ActionResponse<T>> GetAsync(int id)
+    public virtual async Task<ActionResponse<T>> DeleteAsync(int id)
+    {
+        var row = await _entity.FindAsync(id);
+        if (row == null)
         {
-            var row = await _entity.FindAsync(id);
-            if (row != null)
-            {
-                return new ActionResponse<T>
-                {
-                    WasSuccess = true,
-                    Result = row
-                };
-            }
             return new ActionResponse<T>
             {
                 WasSuccess = false,
@@ -87,53 +52,115 @@ namespace BaseProject.Backend.Repositories.Implementations
             };
         }
 
-        public virtual async Task<ActionResponse<IEnumerable<T>>> GetAsync()
+        try
         {
-            return new ActionResponse<IEnumerable<T>>
+            _entity.Remove(row);
+            await _context.SaveChangesAsync();
+            return new ActionResponse<T>
             {
                 WasSuccess = true,
-                Result = await _entity.ToListAsync()
             };
         }
-
-        public virtual async Task<ActionResponse<T>> UpdateAsync(T entity)
-        {
-            try
-            {
-                _context.Update(entity);
-                await _context.SaveChangesAsync();
-                return new ActionResponse<T>
-                {
-                    WasSuccess = true,
-                    Result = entity
-                };
-            }
-            catch (DbUpdateException)
-            {
-                return DbUpdateExceptionActionResponse();
-            }
-            catch (Exception exception)
-            {
-                return ExceptionActionResponse(exception);
-            }
-        }
-
-        private ActionResponse<T> ExceptionActionResponse(Exception exception)
+        catch
         {
             return new ActionResponse<T>
             {
                 WasSuccess = false,
-                Message = exception.Message
+                Message = "No se puede borrar, porque tiene registros relacionados"
             };
         }
+    }
 
-        private ActionResponse<T> DbUpdateExceptionActionResponse()
+    public virtual async Task<ActionResponse<T>> GetAsync(int id)
+    {
+        var row = await _entity.FindAsync(id);
+        if (row != null)
         {
             return new ActionResponse<T>
             {
-                WasSuccess = false,
-                Message = "Ya existe el registro que estas intentando crear."
+                WasSuccess = true,
+                Result = row
             };
         }
+        return new ActionResponse<T>
+        {
+            WasSuccess = false,
+            Message = "Registro no encontrado"
+        };
+    }
+
+    public virtual async Task<ActionResponse<IEnumerable<T>>> GetAsync()
+    {
+        return new ActionResponse<IEnumerable<T>>
+        {
+            WasSuccess = true,
+            Result = await _entity.ToListAsync()
+        };
+    }
+
+    public virtual async Task<ActionResponse<T>> UpdateAsync(T entity)
+    {
+        try
+        {
+            _context.Update(entity);
+            await _context.SaveChangesAsync();
+            return new ActionResponse<T>
+            {
+                WasSuccess = true,
+                Result = entity
+            };
+        }
+        catch (DbUpdateException)
+        {
+            return DbUpdateExceptionActionResponse();
+        }
+        catch (Exception exception)
+        {
+            return ExceptionActionResponse(exception);
+        }
+    }
+
+    private ActionResponse<T> ExceptionActionResponse(Exception exception)
+    {
+        return new ActionResponse<T>
+        {
+            WasSuccess = false,
+            Message = exception.Message
+        };
+    }
+
+    private ActionResponse<T> DbUpdateExceptionActionResponse()
+    {
+        return new ActionResponse<T>
+        {
+            WasSuccess = false,
+            Message = "Ya existe el registro que estas intentando crear."
+        };
+    }
+
+    ///paginado
+    ///
+    public virtual async Task<ActionResponse<IEnumerable<T>>> GetAsync(PaginationDTO pagination)
+    {
+        var queryable = _entity.AsQueryable();
+
+        return new ActionResponse<IEnumerable<T>>
+        {
+            WasSuccess = true,
+            Result = await queryable
+                .Paginate(pagination)
+                .ToListAsync()
+        };
+    }
+
+    public virtual async Task<ActionResponse<int>> GetTotalRecordsAsync(PaginationDTO pagination)
+    {
+        var queryable = _entity.AsQueryable();
+        double count = await queryable.CountAsync();
+        return new ActionResponse<int>
+        {
+            WasSuccess = true,
+            Result = (int)count
+        };
     }
 }

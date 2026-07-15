@@ -1,5 +1,7 @@
 ﻿using BaseProject.Backend.Data;
+using BaseProject.Backend.Helpers;
 using BaseProject.Backend.Repositories.Interfaces;
+using BaseProject.Shared.DTOs;
 using BaseProject.Shared.Entities;
 using BaseProject.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +49,24 @@ public class CountriesRepository : GenericRepository<Country>, ICountriesReposit
         {
             WasSuccess = true,
             Result = country
+        };
+    }
+
+    ///paginado
+    ///
+    public override async Task<ActionResponse<IEnumerable<Country>>> GetAsync(PaginationDTO pagination)
+    {
+        var queryable = _context.Countries
+            .Include(c => c.States)
+            .AsQueryable();
+
+        return new ActionResponse<IEnumerable<Country>>
+        {
+            WasSuccess = true,
+            Result = await queryable
+                .OrderBy(x => x.Name)
+                .Paginate(pagination)
+                .ToListAsync()
         };
     }
 }

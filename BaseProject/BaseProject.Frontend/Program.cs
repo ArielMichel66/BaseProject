@@ -1,5 +1,6 @@
-using MudBlazor.Services;
 using BaseProject.Frontend.Components;
+using BaseProject.Frontend.Repositories;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ builder.Services.AddMudServices();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri("https://localhost:7249") });
+
+builder.Services.AddScoped<IRepository, Repository>();
 
 var app = builder.Build();
 
@@ -22,7 +26,6 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 

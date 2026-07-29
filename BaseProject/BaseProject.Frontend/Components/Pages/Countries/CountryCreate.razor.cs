@@ -13,6 +13,8 @@ public partial class CountryCreate
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
     private async Task CreateAsync()
     {
         var responseHttp = await Repository.PostAsync("/api/countries", country);
@@ -29,6 +31,6 @@ public partial class CountryCreate
 
     private void Return()
     {
-        NavigationManager.NavigateTo("/countries", forceLoad: true);
+        MudDialog.Close(DialogResult.Ok(true));
     }
 }

@@ -108,7 +108,7 @@ public partial class CountriesIndex
         }
 
         var result = await dialog.Result;
-        if (result!.Canceled!)
+        if (result != null && !result.Canceled)
         {
             await LoadTotalRecordsAsync();
             await table.ReloadServerData();

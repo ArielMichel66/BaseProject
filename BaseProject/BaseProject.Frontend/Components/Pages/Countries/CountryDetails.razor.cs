@@ -175,7 +175,7 @@ public partial class CountryDetails
     {
         var parameters = new DialogParameters
             {
-                { "Message", $"¿Estás seguro de que quieres eliminar el estado {state.Name}?" }
+                { "Message", $"¿Estás seguro de que quieres eliminar esta provincia / estado {state.Name}?" }
             };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall, CloseOnEscapeKey = true };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmación", parameters, options);

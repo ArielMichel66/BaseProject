@@ -1,12 +1,14 @@
 using BaseProject.Frontend.Components.Shared;
 using BaseProject.Frontend.Repositories;
 using BaseProject.Shared.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net;
 
 namespace BaseProject.Frontend.Components.Pages.Countries;
 
+[Authorize(Roles = "Admin")]
 public partial class CountriesIndex
 {
     private List<Country>? Countries { get; set; }

@@ -1,4 +1,5 @@
-﻿using BaseProject.Shared.Entities;
+﻿using BaseProject.Shared.DTOs;
+using BaseProject.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace BaseProject.Backend.Repositories.Interfaces;
@@ -14,4 +15,9 @@ public interface IUsersRepository
     Task AddUserToRoleAsync(User user, string roleName);
 
     Task<bool> IsUserInRoleAsync(User user, string roleName);
+
+    ///PARA LOGIN
+    Task<SignInResult> LoginAsync(LoginDTO model);
+
+    Task LogoutAsync();
 }

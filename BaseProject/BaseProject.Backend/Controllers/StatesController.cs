@@ -1,11 +1,14 @@
 ﻿using BaseProject.Backend.UnitsOfWork.Interfaces;
 using BaseProject.Shared.DTOs;
 using BaseProject.Shared.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BaseProject.Backend.Controllers;
 
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Route("api/[controller]")]
 public class StatesController : GenericController<State>
 {

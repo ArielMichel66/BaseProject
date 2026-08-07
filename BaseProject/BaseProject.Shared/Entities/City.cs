@@ -1,7 +1,5 @@
 ﻿using BaseProject.Shared.Interfaces;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace BaseProject.Shared.Entities;
 
@@ -16,8 +14,6 @@ public class City : IEntityWithName
 
     public int StateId { get; set; }
 
-    [JsonIgnore]
-    [ValidateNever]
     public State? State { get; set; } = null!;
 
     public ICollection<User>? Users { get; set; }

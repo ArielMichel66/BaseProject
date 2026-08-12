@@ -1,5 +1,35 @@
+using BaseProject.Frontend.Repositories;
+using BaseProject.Shared.DTOs;
+using Microsoft.AspNetCore.Components;
+using MudBlazor;
+
 namespace BaseProject.Frontend.Components.Pages.Auth;
 
 public partial class ResendConfirmationEmailToken
 {
+    private EmailDTO emailDTO = new();
+    private bool loading;
+
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IRepository Repository { get; set; } = null!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private async Task ResendConfirmationEmailTokenAsync()
+    {
+        loading = true;
+        var responseHttp = await Repository.PostAsync("/api/accounts/ResendToken", emailDTO);
+        loading = false;
+
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            Snackbar.Add(message ?? "Ocurrió un error en el servidor. /api/accounts/ResendToken", Severity.Error);
+            return;
+        }
+
+        MudDialog.Cancel();
+        NavigationManager.NavigateTo("/");
+        Snackbar.Add("Se te ha enviado un correo electrónico con las instrucciones para activar tu usuario.", Severity.Success);
+    }
 }
